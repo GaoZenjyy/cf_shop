@@ -10,8 +10,6 @@
   "dependencies": {
     "axios": "^0.19.0",
     "core-js": "^3.3.2",
-    "jsonwebtoken": "^8.5.1",
-    "md5": "^2.2.1",
     "vant": "^2.2.13",
     "vue": "^2.6.10",
     "vue-router": "^3.1.3",
