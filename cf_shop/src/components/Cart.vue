@@ -123,6 +123,8 @@ export default {
         return true;
       },
       set: function(newcalue) {
+        // console.log(newcalue);
+
         this.cart.forEach(v => {
           if (v !== null) {
             v.ischk = newcalue;
