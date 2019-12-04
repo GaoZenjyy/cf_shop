@@ -4,6 +4,9 @@ const md5 = require("md5");
 const config = require("../config")
 const connt = require("../db")
 const jsonwebtoken = require("jsonwebtoken")
+// 引入中间件 
+const { chkToken } = require("../util")
+
 // 用户注册
 router.post("/register", (req, res) => {
     // console.log(req.body);
@@ -346,46 +349,66 @@ router.get("/optios", (req, res) => {
 
 })
 // 获取登录数据
-router.get("/userdata", (req, res) => {
-    let token = req.headers.authorization
-    // console.log(token);
-    if (token === undefined) {
-        res.json({
-            "ok": 0,
-            "error": "无效的令牌"
-        })
-    } else {
-        // console.log(12);
+router.get("/userdata", chkToken, (req, res) => {
 
-        try {
-            // console.log(token);
-            var decoded = jsonwebtoken.verify(token.substring(6), config.md5s);
-            // let decoded = jsonwebtoken.verify(token.substring(7), config.md5s);
-            // console.log(decoded.id);
-            let id = decoded.id
-            let sql = `SELECT * FROM cf_users WHERE id = ${id}`
-            connt.query(sql, (error, data) => {
-
-                if (error) {
-                    res.json({
-                        "ok": 0,
-                        "error": error.message
-                    })
-                } else {
-                    // console.log(data);
-                    res.json({
-                        data
-                    })
-                }
-            })
-
-        } catch (err) {
+    let id = req.userId
+    let sql = `SELECT * FROM cf_users WHERE id = ${id}`
+    connt.query(sql, (error, data) => {
+        // console.log(data);
+        if (error) {
             res.json({
                 "ok": 0,
-                "error": "无效的令牌"
+                "error": error.message
+            })
+        } else {
+            res.json({
+                data
             })
         }
-    }
+    })
+
+
+
+    // console.log(req.userId);
+
+    // let token = req.headers.authorization
+    // // console.log(token);
+    // if (token === undefined) {
+    //     res.json({
+    //         "ok": 0,
+    //         "error": "无效的令牌"
+    //     })
+    // } else {
+    //     // console.log(12);
+
+    //     try {
+    //         // console.log(token);
+    //         var decoded = jsonwebtoken.verify(token.substring(6), config.md5s);
+    //         // let decoded = jsonwebtoken.verify(token.substring(7), config.md5s);
+    //         // console.log(decoded.id);
+    //         let id = req.userId
+    //         let sql = `SELECT * FROM cf_users WHERE id = ${id}`
+    //         connt.query(sql, (error, data) => {
+    //             // console.log(data);
+    //             if (error) {
+    //                 res.json({
+    //                     "ok": 0,
+    //                     "error": error.message
+    //                 })
+    //             } else {
+    //                 res.json({
+    //                     data
+    //                 })
+    //             }
+    //         })
+
+    //     } catch (err) {
+    //         res.json({
+    //             "ok": 0,
+    //             "error": "无效的令牌"
+    //         })
+    //     }
+    // }
 
 })
 // 获取商品图片
