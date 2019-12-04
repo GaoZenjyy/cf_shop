@@ -14,7 +14,7 @@ axios.interceptors.request.use(function (config) {
   // 判断有没有 token
   if (!token !== null) {
     // 有就添加到 请求头上 发送到服务器
-    config.headers.Authorization = "Bearer" + token
+    config.headers.Authorization = "Bearer " + token
   }
   return config;
 });

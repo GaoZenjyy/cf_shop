@@ -90,7 +90,7 @@ export default {
         // console.log(res);
         if (res.data.ok == 0) {
           this.$dialog.alert({
-            message: res.data.message
+            message: res.data.error
           });
         } else {
           let user = res.data.data[0].cf_username;
