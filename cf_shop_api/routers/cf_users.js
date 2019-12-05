@@ -2,11 +2,12 @@ const express = require("express");
 const router = express.Router();
 const md5 = require("md5");
 const config = require("../config")
-const connt = require("../db")
+const { connt } = require("../db")
 const jsonwebtoken = require("jsonwebtoken")
 // 引入中间件 
 const { chkToken } = require("../util")
-
+// 引入 同步 query 
+const { query } = require("../db");
 // 用户注册
 router.post("/register", (req, res) => {
     // console.log(req.body);
@@ -164,21 +165,28 @@ router.get("/wheel", (req, res) => {
     })
 })
 // 首页标题
-router.get("/titles", (req, res) => {
-    connt.query("SELECT * FROM cf_title", (error, result) => {
-        // console.log();
-        if (error) {
-            res.json({
-                "ok": 0,
-                "error": error.message
-            })
-        } else {
-            res.json({
-                result
-            })
-        }
-
+router.get("/titles", async (req, res, next) => {
+    let result = await query("SELECT * FROM cf_title").catch(next);
+    if (result === undefined) return
+    // console.log(data);
+    res.json({
+        result
     })
+
+    // connt.query("SELECT * FROM cf_title", (error, result) => {
+    //     // console.log();
+    //     if (error) {
+    //         res.json({
+    //             "ok": 0,
+    //             "error": error.message
+    //         })
+    //     } else {
+    //         res.json({
+    //             result
+    //         })
+    //     }
+
+    // })
 })
 // 模型手办
 router.get("/moxin", (req, res) => {

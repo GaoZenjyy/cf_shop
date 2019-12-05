@@ -11,7 +11,15 @@ app.use(bodyparser.json());
 app.use(cors());
 // 路由 登录 注册
 app.use("/api/v1", require("./routers/cf_users"))
-
+// 报错
+app.use((err, req, res, next) => {
+    res.json({
+        "ok": 0,
+        "error": err
+    })
+    // next();
+    // return
+})
 // 监听服务
 app.listen(config.server.port, config.server.ip, () => {
     console.log(`run serve ${config.server.port}`);

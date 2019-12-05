@@ -29,6 +29,7 @@ function chkToken(req, res, next) {
         }
     }
 }
+
 // 暴露
 module.exports = {
     chkToken
