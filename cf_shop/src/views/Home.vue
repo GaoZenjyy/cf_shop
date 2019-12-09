@@ -126,7 +126,7 @@ export default {
     //标题请求
     getTitles() {
       this.$http.get("/titles").then(res => {
-        console.log(res);
+        // console.log(res);
         if (res.data.ok == 0) {
           this.$dialog.alert({
             message: res.data.message
