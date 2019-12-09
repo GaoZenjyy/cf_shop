@@ -9,6 +9,8 @@ const app = express();
 app.use(bodyparser.urlencoded({ extended: true }));
 app.use(bodyparser.json());
 app.use(cors());
+// 项目托管
+app.use(express.static("dist"))
 // 路由 登录 注册
 app.use("/api/v1", require("./routers/cf_users"))
 // 报错
