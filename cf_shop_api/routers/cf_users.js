@@ -2,12 +2,12 @@ const express = require("express");
 const router = express.Router();
 const md5 = require("md5");
 const config = require("../config")
-const { connt } = require("../db")
+const connt = require("../db")
 const jsonwebtoken = require("jsonwebtoken")
 // 引入中间件 
-const { chkToken } = require("../util")
+// const { chkToken } = require("../util")
 // 引入 同步 query 
-const { query } = require("../db");
+// const { query } = require("../db");
 // 用户注册
 router.post("/register", (req, res) => {
     // console.log(req.body);
@@ -121,7 +121,7 @@ router.post("/login", (req, res) => {
     // 先判断数据有没有这个手机号 写查询语句
     let sql = "SELECT id,cf_password FROM cf_users WHERE cf_username = ?";
     connt.query(sql, mobile, (error, data) => {
-        // console.log(data);
+        console.log(data);
         if (error) {
             res.json({
                 "ok": 0,
@@ -140,8 +140,8 @@ router.post("/login", (req, res) => {
                 })
             } else {
                 res.json({
-                    "code": 400,
-                    "error": "用户名或者密码错误"
+                    "ok": 0,
+                    "error": "改用户还没有注册 请去注册"
                 })
             }
         }
@@ -165,28 +165,28 @@ router.get("/wheel", (req, res) => {
     })
 })
 // 首页标题
-router.get("/titles", async (req, res, next) => {
-    let result = await query("SELECT * FROM cf_title").catch(next);
-    if (result === undefined) return
-    // console.log(data);
-    res.json({
-        result
-    })
-
-    // connt.query("SELECT * FROM cf_title", (error, result) => {
-    //     // console.log();
-    //     if (error) {
-    //         res.json({
-    //             "ok": 0,
-    //             "error": error.message
-    //         })
-    //     } else {
-    //         res.json({
-    //             result
-    //         })
-    //     }
-
+router.get("/titles", (req, res) => {
+    // let result = await query("SELECT * FROM cf_title").catch(next);
+    // if (result === undefined) return
+    // // console.log(data);
+    // res.json({
+    //     result
     // })
+
+    connt.query("SELECT * FROM cf_title", (error, result) => {
+        // console.log();
+        if (error) {
+            res.json({
+                "ok": 0,
+                "error": error.message
+            })
+        } else {
+            res.json({
+                result
+            })
+        }
+
+    })
 })
 // 模型手办
 router.get("/moxin", (req, res) => {
@@ -357,66 +357,63 @@ router.get("/optios", (req, res) => {
 
 })
 // 获取登录数据
-router.get("/userdata", chkToken, (req, res) => {
-
-    let id = req.userId
-    let sql = `SELECT * FROM cf_users WHERE id = ${id}`
-    connt.query(sql, (error, data) => {
-        // console.log(data);
-        if (error) {
-            res.json({
-                "ok": 0,
-                "error": error.message
-            })
-        } else {
-            res.json({
-                data
-            })
-        }
-    })
-
-
-
-    // console.log(req.userId);
-
-    // let token = req.headers.authorization
-    // // console.log(token);
-    // if (token === undefined) {
-    //     res.json({
-    //         "ok": 0,
-    //         "error": "无效的令牌"
-    //     })
-    // } else {
-    //     // console.log(12);
-
-    //     try {
-    //         // console.log(token);
-    //         var decoded = jsonwebtoken.verify(token.substring(6), config.md5s);
-    //         // let decoded = jsonwebtoken.verify(token.substring(7), config.md5s);
-    //         // console.log(decoded.id);
-    //         let id = req.userId
-    //         let sql = `SELECT * FROM cf_users WHERE id = ${id}`
-    //         connt.query(sql, (error, data) => {
-    //             // console.log(data);
-    //             if (error) {
-    //                 res.json({
-    //                     "ok": 0,
-    //                     "error": error.message
-    //                 })
-    //             } else {
-    //                 res.json({
-    //                     data
-    //                 })
-    //             }
-    //         })
-
-    //     } catch (err) {
+router.get("/userdata", (req, res) => {
+    // let id = req.userId
+    // let sql = `SELECT * FROM cf_users WHERE id = ${id}`
+    // connt.query(sql, (error, data) => {
+    //     // console.log(data);
+    //     if (error) {
     //         res.json({
     //             "ok": 0,
-    //             "error": "无效的令牌"
+    //             "error": error.message
+    //         })
+    //     } else {
+    //         res.json({
+    //             data
     //         })
     //     }
-    // }
+    // })
+    // console.log(req.userId);
+    let token = req.headers.authorization
+    // console.log(token);
+    if (token === undefined) {
+        res.json({
+            "ok": 0,
+            "error": "无效的令牌"
+        })
+    } else {
+        // console.log(12);
+
+        try {
+            // console.log(token);
+            // var decoded = jsonwebtoken.verify(token.substring(6), config.md5s);
+            // console.log(decoded);
+
+            let decoded = jsonwebtoken.verify(token.substring(7), config.md5s);
+            // console.log(decoded.id);
+            let id = decoded.id
+            let sql = `SELECT * FROM cf_users WHERE id = ${id}`
+            connt.query(sql, (error, data) => {
+                // console.log(data);
+                if (error) {
+                    res.json({
+                        "ok": 0,
+                        "error": error.message
+                    })
+                } else {
+                    res.json({
+                        data
+                    })
+                }
+            })
+
+        } catch (err) {
+            res.json({
+                "ok": 0,
+                "error": "无效的令牌"
+            })
+        }
+    }
 
 })
 // 获取商品图片
@@ -466,19 +463,19 @@ router.get("/goodsimage", (req, res) => {
 })
 // 根据商品id 获取 商品
 router.get("/dataid", (req, res) => {
-    let id = req.query.id
-    // console.log(id);
-    id = id.split(",")
-    // console.log(id);
-    let cat = []
-    id.forEach(v => {
-        cat.push("?")
-    })
-    // console.log(cat);
-    cat = cat.join(",")
-    // console.log(cat);
-    let sql = `SELECT * FROM cf_goods_shops WHERE id in(${cat})`
-    connt.query(sql, id, (error, data) => {
+    // let id = req.query.id
+    // // console.log(id);
+    // id = id.split(",")
+    // // console.log(id);
+    // let cat = []
+    // id.forEach(v => {
+    //     cat.push("?")
+    // })
+    // // console.log(cat);
+    // cat = cat.join(",")
+    // // console.log(cat);
+    let sql = `SELECT * FROM cf_cates WHERE ischk = 1`
+    connt.query(sql, (error, data) => {
         // console.log(data);
         if (error) {
             res.json({
@@ -525,7 +522,7 @@ router.post("/addresses", (req, res) => {
         // 获取用户id
         let token = req.headers.authorization
         try {
-            var decoded = jsonwebtoken.verify(token.substring(6), config.md5s);
+            var decoded = jsonwebtoken.verify(token.substring(7), config.md5s);
             // console.log(decoded);
             let id = decoded.id
             let sql2 = `UPDATE cf_addresses SET isdefault = 1`
@@ -916,6 +913,189 @@ router.get("/geraddress", (req, res) => {
 
 
     })
+})
+
+
+
+// 加入购物车
+router.post("/goshops", (req, res) => {
+    let token = req.headers.authorization;
+    if (token === undefined) {
+        res.json({
+            "ok": 0,
+            "error": "令牌无效 请重新登录"
+        })
+    }
+    let id = req.body.id
+    // console.log(id);
+    let sql = `SELECT * FROM cf_goods_shops WHERE id = ${id}`
+    connt.query(sql, (error, data) => {
+        // console.log(data);
+
+        if (error) {
+            res.json({
+                "ok": 0,
+                "error": error.message
+            })
+        } else {
+            try {
+                let decoded = jsonwebtoken.verify(token.substring(7), config.md5s);
+                // console.log(decoded);
+                let ids = decoded.id
+
+                let sql = `SELECT * FROM cf_cates WHERE  cate_id = ${id} AND user_id = ${ids}`
+                connt.query(sql, (error, result) => {
+                    // console.log(result);
+                    if (error) {
+                        res.json({
+                            "ok": 0,
+                            "error": error.message
+                        })
+                    } else {
+                        let info = {
+                            goods_name: data[0].goods_name,
+                            price: data[0].goods_price,
+                            image: data[0].goods_image,
+                            pag_count: 1,
+                            ischk: 0,
+                            cate_id: id,
+                            user_id: ids
+                        }
+                        // console.log(info);
+                        if (result.length == 0) {
+                            let sql = `INSERT INTO cf_cates SET ?`
+                            connt.query(sql, info, (error, data) => {
+                                // console.log(data);
+                                if (error) {
+                                    res.json({
+                                        "ok": 0,
+                                        "error": error.message
+                                    })
+                                } else {
+                                    res.json({
+                                        "ok": 200,
+                                        "message": "加入购物车成功"
+                                    })
+                                }
+                            })
+                        } else {
+                            let count = ++result[0].pag_count
+                            let sql = `UPDATE cf_cates SET pag_count = ? WHERE cate_id = ${id} AND user_id = ${ids}`
+                            connt.query(sql, count, (error, data) => {
+                                if (error) {
+                                    res.json({
+                                        "ok": 0,
+                                        "error": error.message
+                                    })
+                                } else {
+                                    res.json({
+                                        "ok": 200,
+                                        "message": "数量加一"
+                                    })
+                                }
+                            })
+                        }
+                    }
+                })
+            } catch (error) {
+                res.json({
+                    "ok": 0,
+                    "error": "令牌无效 请重新登录"
+                })
+            }
+
+        }
+    })
+})
+// 购物车显示
+router.get("/cartgoods", (req, res) => {
+    // console.log(req.headers.authorization);
+    let token = req.headers.authorization;
+    if (token === undefined) {
+        res.json({
+            "ok": 0,
+            "error": "令牌无效 请重新登录"
+        })
+    } else {
+        try {
+            let decoded = jsonwebtoken.verify(token.substring(7), config.md5s);
+            // console.log(decoded);
+            let id = decoded.id
+            connt.query(`SELECT * FROM cf_cates WHERE user_id = ${id}`, (error, data) => {
+                // console.log(data);
+                if (error) {
+                    res.json({
+                        "ok": 0,
+                        "error": error.message
+                    })
+                } else {
+                    res.json({
+                        "ok": 200,
+                        data
+                    })
+                }
+            })
+        } catch (error) {
+            res.json({
+                "ok": 0,
+                "error": "令牌无效 请重新登录"
+            })
+        }
+    }
+
+})
+// 步进
+router.put("/bujidata", (req, res) => {
+    let id = req.body.id
+    let value = req.body.value
+    // console.log(id, value);
+    // console.log(id);
+    let sql = `UPDATE cf_cates SET pag_count = ${value} WHERE id = ${id}`
+    connt.query(sql, (error, data) => {
+        // return console.log(data);
+        if (error) {
+            res.json({
+                "ok": 0,
+                "error": error.message
+            })
+        } else {
+            res.json({
+                "ok": 200,
+                "message": "数量更新成功"
+            })
+        }
+    })
+
+
+})
+// 全选
+router.put("/checklist", (req, res) => {
+    let value = req.body.value
+    let id = req.body.id
+    // console.log(value);
+    if (value === true) {
+        value = 1
+    } else {
+        value = 0
+    }
+    // console.log(value);
+    let sql = `UPDATE cf_cates SET ischk = ${value} WHERE id = ${id}`
+    connt.query(sql, (error, data) => {
+        // console.log(data);
+        if (error) {
+            res.json({
+                "ok": 0,
+                "error": error.message
+            })
+        } else {
+            res.json({
+                "code": 200,
+                "message": "更新状态成功"
+            })
+        }
+    })
+
+
 })
 
 module.exports = router;

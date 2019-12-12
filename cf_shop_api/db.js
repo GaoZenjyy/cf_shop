@@ -18,4 +18,4 @@ function query(sql, params) {
         })
     })
 }
-module.exports = { connt, query }
+module.exports = connt

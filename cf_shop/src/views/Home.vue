@@ -25,7 +25,7 @@
     </div>
     <!-- 标题 -->
     <van-grid :column-num="4" :border="false">
-      <van-grid-item v-for="(item,index) in titleData" :key="index"  @click="gotoclass">
+      <van-grid-item v-for="(item,index) in titleData" :key="index" @click="gotoclass">
         <img slot="icon" class="titles" :src="item.cf_image" />
         <p slot="text" class="titlep">{{item.cf_title}}</p>
       </van-grid-item>
@@ -195,7 +195,6 @@ export default {
     gotoclass() {
       this.$router.push("/class");
       // console.log(122);
-      
     }
   },
   created() {
@@ -299,7 +298,7 @@ export default {
   // background-color: aqua;
 }
 .moxis {
-  width: 190px;
+  width: 100%;
   height: 186px;
 }
 .moxingone {
@@ -309,4 +308,5 @@ export default {
   color: #f7545f;
   font-size: 18px;
 }
+
 </style>

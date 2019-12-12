@@ -37,7 +37,7 @@
     <van-goods-action>
       <van-goods-action-icon icon="chat-o" text="客服" @click="show=!show" />
       <van-goods-action-icon icon="cart-o" text="购物车" :info="total"  to="/cart"/>
-      <van-goods-action-button color="#be99ff" type="warning" text="加入购物车" @click="goshopping" />
+      <van-goods-action-button color="#be99ff" type="warning" text="加入购物车" @click="goshops" />
       <van-goods-action-button color="#7232dd" type="danger" text="立即购买" />
     </van-goods-action>
     <!-- 弹框 -->
@@ -105,46 +105,61 @@ export default {
     onClickLeft() {
       this.$router.go(-1);
     },
-    // 加入购物车
-    goshopping() {
-      // console.log(123);
-      let token = localStorage.getItem("token");
-      // console.log(token);
-      if (!token) {
-        setTimeout(() => {
-          this.$router.push("/login");
-        }, 1000);
-        this.$toast.fail("请先登录");
-      } else {
-        // this.start(this.total);
-        // console.log(this.goods_id);
-        let ids = localStorage.getItem("id");
-        // console.log(ids);
-        if (ids === null) {
-          ids = [parseInt(this.goods_id)];
+      // 加入购物车
+    goshops() {
+      this.$http.post("/goshops", { id: this.goods_id }).then(res => {
+        // console.log(res);
+        if (res.data.ok == 0) {
+          this.$dialog.alert({
+            message: res.data.error
+          });
         } else {
-          ids = JSON.parse(ids);
-          ids.push(parseInt(this.goods_id));
-          ids = Array.from(new Set(ids));
+          this.$dialog.alert({
+            message: res.data.message
+          });
         }
-        localStorage.setItem("id", JSON.stringify(ids));
-        let cart = localStorage.getItem("cart");
-        if (cart === null) {
-          cart = [];
-          cart[parseInt(this.goods_id)] = {
-            ischk: false,
-            count: 1
-          };
-        } else {
-          cart = JSON.parse(cart);
-          cart[parseInt(this.goods_id)] = {
-            ischk: false,
-            count: 1
-          };
-        }
-        localStorage.setItem("cart", JSON.stringify(cart));
-      }
+      });
     }
+    // 加入购物车
+    // goshopping() {
+    //   // console.log(123);
+    //   let token = localStorage.getItem("token");
+    //   // console.log(token);
+    //   if (!token) {
+    //     setTimeout(() => {
+    //       this.$router.push("/login");
+    //     }, 1000);
+    //     this.$toast.fail("请先登录");
+    //   } else {
+    //     // this.start(this.total);
+    //     // console.log(this.goods_id);
+    //     let ids = localStorage.getItem("id");
+    //     // console.log(ids);
+    //     if (ids === null) {
+    //       ids = [parseInt(this.goods_id)];
+    //     } else {
+    //       ids = JSON.parse(ids);
+    //       ids.push(parseInt(this.goods_id));
+    //       ids = Array.from(new Set(ids));
+    //     }
+    //     localStorage.setItem("id", JSON.stringify(ids));
+    //     let cart = localStorage.getItem("cart");
+    //     if (cart === null) {
+    //       cart = [];
+    //       cart[parseInt(this.goods_id)] = {
+    //         ischk: false,
+    //         count: 1
+    //       };
+    //     } else {
+    //       cart = JSON.parse(cart);
+    //       cart[parseInt(this.goods_id)] = {
+    //         ischk: false,
+    //         count: 1
+    //       };
+    //     }
+    //     localStorage.setItem("cart", JSON.stringify(cart));
+    //   }
+    // }
   },
   created() {
     this.goods_id = this.$route.params.id;

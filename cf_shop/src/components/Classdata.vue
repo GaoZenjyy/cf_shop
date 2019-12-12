@@ -136,7 +136,7 @@ export default {
 </script>
 <style lang="less" scoped>
 .moxis {
-  width: 190px;
+  width: 100%;
   height: 186px;
 }
 .moxingone {

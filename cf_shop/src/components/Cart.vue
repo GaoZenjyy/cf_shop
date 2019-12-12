@@ -6,20 +6,17 @@
         <!-- 商品数据 -->
         <van-checkbox
           :label-disabled="true"
-          v-for="(item, index) in goodsdata"
+          v-for="(item, index) in goods"
           :key="index"
-          v-model="cart[item.id].ischk"
+          v-model="item.ischk"
+           @change="xuanzhjong(item.id,item.ischk)"
         >
           <van-swipe-cell>
             <van-cell :border="true">
-              <van-card
-                :price="item.goods_price"
-                :title="item.goods_name"
-                :thumb="item.goods_image"
-              >
+              <van-card :price="item.price" :title="item.goods_name" :thumb="item.image">
                 <div slot="footer">
-                  <van-stepper v-model="cart[item.id].count" min="1" />
-                  <van-tag type="primary">小计:￥{{item.goods_price*cart[item.id].count}}</van-tag>
+                  <van-stepper v-model="item.pag_count" min="1" @change="bujing(item.id,item.pag_count)" />
+                  <van-tag type="primary">小计:￥{{item.price*item.pag_count}}</van-tag>
                 </div>
               </van-card>
             </van-cell>
@@ -30,7 +27,7 @@
           </van-swipe-cell>
         </van-checkbox>
 
-        <van-submit-bar :price="totalAllprice" button-text="提交订单" @submit="gopay">
+        <van-submit-bar :price="Allprice" button-text="提交订单" @submit="gopay">
           <van-checkbox v-model="allchk">全选</van-checkbox>
         </van-submit-bar>
       </div>
@@ -57,7 +54,8 @@ export default {
       checked: "",
       shuma: [],
       goodsdata: [],
-      cart: JSON.parse(localStorage.getItem("cart")) || []
+      goods: []
+      // cart: JSON.parse(localStorage.getItem("cart")) || []
     };
   },
   methods: {
@@ -75,75 +73,126 @@ export default {
         }
       });
     },
-    // 商品数据
-    getGoodsData() {
-      let id = JSON.parse(localStorage.getItem("id"));
-      // console.log(id);
-      if (id !== null) {
-        this.$http.get(`/dataid?id=` + id).then(res => {
-          // console.log(res);
-          if (res.data.ok === 0) {
-            this.$dialog.alert({
-              message: res.data.message
-            });
-          } else {
-            this.goodsdata = res.data.data;
-          }
-        });
-      }
+    // // 商品数据
+    getcartdata() {
+      this.$http.get("/cartgoods").then(res => {
+        // console.log(res);
+        if (res.data.ok == 0) {
+          this.$dialog.alert({
+            message: res.data.error
+          });
+        } else {
+          res.data.data.forEach(v => {
+            if (v.ischk === 0) {
+              v.ischk = false;
+            } else {
+              v.ischk = true;
+            }
+          });
+          //   console.log(res);
+          this.goods = res.data.data;
+        }
+      });
     },
+    // // 商品数据
+    // getGoodsData() {
+    //   let id = JSON.parse(localStorage.getItem("id"));
+    //   // console.log(id);
+    //   if (id !== null) {
+    //     this.$http.get(`/dataid?id=` + id).then(res => {
+    //       // console.log(res);
+    //       if (res.data.ok === 0) {
+    //         this.$dialog.alert({
+    //           message: res.data.message
+    //         });
+    //       } else {
+    //         this.goodsdata = res.data.data;
+    //       }
+    //     });
+    //   }
+    // },
     //
+    // 步进
+    bujing(id, value) {
+      // console.log(id);
+      this.$http.put("/bujidata", { id: id, value: value }).then(res => {
+        // console.log(res);
+        if (res.data.ok == 0) {
+          this.$dialog.alert({
+            message: res.data.error
+          });
+        } else {
+          this.$dialog.alert({
+            message: res.data.message
+          });
+        }
+      });
+    },
+        // 全选
+    xuanzhjong(id, value) {
+      this.$http.put("/checklist", { id: id, value: value }).then(res => {
+        if (res.data.ok == 0) {
+          this.$dialog.alert({
+            message: res.data.error
+          });
+        } else {
+          this.$dialog.alert({
+            message: res.data.message
+          });
+        }
+      });
+    },
     gopay() {
       this.$router.push("/pay");
       // console.log(this.totalAllprice);
-      localStorage.setItem("totalAll", this.totalAllprice);
+      // localStorage.setItem("totalAll", this.totalAllprice);
     }
   },
   computed: {
-    // 总价
-    totalAllprice: function() {
+    Allprice: function() {
       let num = 0;
-      this.goodsdata.forEach(v => {
-        // console.log(v);
-        if (this.cart[v.id].ischk) {
-          num += v.goods_price * this.cart[v.id].count;
+      this.goods.forEach(v => {
+        if (v.ischk === true) {
+          num += v.price * v.pag_count;
         }
       });
       return num * 100;
     },
-    // 全选
+    // 是否全选
     allchk: {
       get: function() {
-        for (let i = 0; i < this.cart.length; i++) {
-          if (this.cart[i] === null) continue;
-          if (this.cart[i].ischk === false) {
+        for (let i = 0; i < this.goods.length; i++) {
+          //判读 只要有一个没有勾选就不全选
+          // console.log(this.goods[i]);
+
+          if (this.goods[i].ischk === false) {
             return false;
           }
         }
         return true;
       },
-      set: function(newcalue) {
-        // console.log(newcalue);
-
-        this.cart.forEach(v => {
-          if (v !== null) {
-            v.ischk = newcalue;
-          }
+      set: function(newvalue) {
+        // console.log(newvalue);
+        this.goods.forEach(v => {
+          // if (v !== null) {
+          v.ischk = newvalue;
+          // }
         });
       }
     }
   },
-  watch: {
-    cart: {
-      deep: true,
-      handler: function() {
-        localStorage.setItem("cart", JSON.stringify(this.cart));
-      }
-    }
-  },
+  // watch: {
+  //   cart: {
+  //     deep: true,
+  //     handler: function() {
+  //       localStorage.setItem("cart", JSON.stringify(this.cart));
+  //     }
+  //   }
+  // },
   created() {
     this.getshumadata();
-    this.getGoodsData();
+    // this.getGoodsData();
+    this.getcartdata();
   }
 };
 </script>
@@ -158,7 +207,7 @@ export default {
   min-height: 300px;
 }
 .moxis {
-  width: 190px;
+  width: 100%;
   height: 186px;
 }
 .moxingone {

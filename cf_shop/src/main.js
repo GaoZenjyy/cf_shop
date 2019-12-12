@@ -7,9 +7,9 @@ import axios from "axios"
 import Vant from 'vant';
 import 'vant/lib/index.css';
 Vue.use(Vant);
-axios.defaults.baseURL = "http://127.0.0.1:9898/api/v1";
+// axios.defaults.baseURL = "http://127.0.0.1:9898/api/v1";
 // 项目上线
-// axios.defaults.baseURL = "http://106.53.71.44:9898/api/v1";
+axios.defaults.baseURL = "http://106.53.71.44:7000/api/v1";
 
 axios.interceptors.request.use(function (config) {
   //  获取token 

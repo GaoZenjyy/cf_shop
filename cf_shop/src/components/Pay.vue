@@ -15,10 +15,10 @@
       <van-card
         v-for="(item, index) in goodsdata"
         :key="index"
-        :price="item.goods_price"
+        :price="item.price"
         :title="item.goods_name"
-        :thumb="item.goods_image"
-        :num="carts[item.id].count"
+        :thumb="item.image"
+        :num="item.pag_count"
       ></van-card>
       <van-cell-group>
         <van-cell title="总价" value="内容">
@@ -97,44 +97,76 @@ export default {
     },
     // 商品数据
     getGoodsData() {
-      let id = JSON.parse(localStorage.getItem("id"));
-      // console.log(id);
-      if (id !== null) {
-        this.$http.get(`/dataid?id=` + id).then(res => {
-          // console.log(res);
-          if (res.data.ok === 0) {
-            this.$dialog.alert({
-              message: res.data.message
-            });
-          } else {
-            this.goodsdata = res.data.data;
+      // let id = JSON.parse(localStorage.getItem("id"));
+      // // console.log(id);
+      // if (id !== null) {
+      //   this.$http.get(`/dataid?id=` + id).then(res => {
+      //     // console.log(res);
+      //     if (res.data.ok === 0) {
+      //       this.$dialog.alert({
+      //         message: res.data.message
+      //       });
+      //     } else {
+      //       this.goodsdata = res.data.data;
+      //     }
+      //   });
+      // }
+      this.$http.get("/dataid").then(res => {
+        // console.log(res);
+        if (res.data.ok === 0) {
+          this.$dialog.alert({
+            message: res.data.error
+          });
+        } else {
+          this.goodsdata = res.data.data;
+          let arrt = [];
+          let arrts = [];
+          for (let i = 0; i < this.goodsdata.length; i++) {
+            // console.log(this.goodsdata[i]);
+            let num = this.goodsdata[i].pag_count;
+            let money = this.goodsdata[i].pag_count * this.goodsdata[i].price;
+            // console.log(money);
+            arrt.push(num);
+            arrts.push(money);
           }
-        });
-      }
+          // console.log(arrt);
+          let sum = 0;
+          let jia = 0;
+          arrt.forEach(v => {
+            sum += v;
+          });
+          arrts.forEach(v => {
+            jia += v;
+          });
+          // console.log(sum);
+          this.nums = sum;
+          this.cartb = jia;
+        }
+      });
     },
     gettotal() {}
   },
   created() {
     this.getaddress();
     this.getGoodsData();
-    let cart = JSON.parse(localStorage.getItem("cart"));
-    this.carts = cart;
-    let arrt = [];
-    cart.forEach(v => {
-      if (v != null) {
-        arrt.push(v.count);
-      }
-    });
-    // console.log(...arrt);
-    let sum = 0;
-    arrt.forEach(ele => {
-      sum += ele;
-    });
-    // console.log(sum);
-    this.nums = sum;
-    let carta = JSON.parse(localStorage.getItem("totalAll"));
-    // console.log(carta);
-    this.cartb = carta / 100;
+    // let cart = JSON.parse(localStorage.getItem("cart"));
+    // this.carts = cart;
+    // let arrt = [];
+    // cart.forEach(v => {
+    //   if (v != null) {
+    //     arrt.push(v.count);
+    //   }
+    // });
+    // // console.log(...arrt);
+    // let sum = 0;
+    // arrt.forEach(ele => {
+    //   sum += ele;
+    // });
+    // // console.log(sum);
+    // this.nums = sum;
+    // let carta = JSON.parse(localStorage.getItem("totalAll"));
+    // // console.log(carta);
+    // this.cartb = carta / 100;
   }
 };
 </script>

@@ -4,14 +4,14 @@
  Source Server         : gaoyuan
  Source Server Type    : MySQL
  Source Server Version : 50725
- Source Host           : 127.0.0.1:3306
+ Source Host           : localhost:3306
  Source Schema         : cf_shoop
 
  Target Server Type    : MySQL
  Target Server Version : 50725
  File Encoding         : 65001
 
- Date: 26/11/2019 08:06:08
+ Date: 11/12/2019 20:51:57
 */
 
 SET NAMES utf8mb4;
@@ -34,12 +34,34 @@ CREATE TABLE `cf_addresses`  (
   `user_id` int(10) NULL DEFAULT NULL COMMENT '用户id',
   `area_code` varchar(255) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL COMMENT '地区id',
   PRIMARY KEY (`id`) USING BTREE
-) ENGINE = InnoDB AUTO_INCREMENT = 19 CHARACTER SET = utf8 COLLATE = utf8_general_ci ROW_FORMAT = Dynamic;
+) ENGINE = InnoDB AUTO_INCREMENT = 20 CHARACTER SET = utf8 COLLATE = utf8_general_ci ROW_FORMAT = Dynamic;
 
 -- ----------------------------
 -- Records of cf_addresses
 -- ----------------------------
-INSERT INTO `cf_addresses` VALUES (18, '张三', '15984775637', '河北省', '石家庄市', '长安区', '的发生地方', 234000, 0, 3, '130102');
+INSERT INTO `cf_addresses` VALUES (18, '张三', '15984775637', '河北省', '石家庄市', '长安区', '的发生地方', 234000, 0, NULL, '130102');
+INSERT INTO `cf_addresses` VALUES (19, '高源', '15984775637', '四川省', '达州市', '通川区', '安云乡', 635000, 1, 3, '511702');
+
+-- ----------------------------
+-- Table structure for cf_cates
+-- ----------------------------
+DROP TABLE IF EXISTS `cf_cates`;
+CREATE TABLE `cf_cates`  (
+  `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT,
+  `goods_name` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NULL DEFAULT NULL COMMENT '商品名字',
+  `price` decimal(10, 2) NULL DEFAULT NULL COMMENT '商品价格',
+  `image` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NULL DEFAULT NULL COMMENT '商品图片',
+  `pag_count` int(255) NULL DEFAULT NULL COMMENT '商品数量',
+  `ischk` tinyint(3) NULL DEFAULT NULL COMMENT '0: 选中 1:不选中 ',
+  `cate_id` int(10) UNSIGNED NULL DEFAULT NULL,
+  PRIMARY KEY (`id`) USING BTREE
+) ENGINE = InnoDB AUTO_INCREMENT = 15 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci ROW_FORMAT = Dynamic;
+
+-- ----------------------------
+-- Records of cf_cates
+-- ----------------------------
+INSERT INTO `cf_cates` VALUES (13, 'come get some 变色折叠雨伞', 129.00, 'https://game.gtimg.cn/images/zb/x5/uploadImg/goods/201907/20190719184412_98890.jpg', 1, 1, 1);
+INSERT INTO `cf_cates` VALUES (14, '雷神 印花T恤', 118.00, 'https://game.gtimg.cn/images/zb/x5/uploadImg/goods/201907/20190719184455_78192.jpg', 1, 0, 2);
 
 -- ----------------------------
 -- Table structure for cf_class_ification
@@ -299,7 +321,7 @@ CREATE TABLE `cf_users`  (
   `cf_password` varchar(255) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL COMMENT '用户密码',
   `create_time` int(10) NULL DEFAULT NULL COMMENT '用户创建时间',
   PRIMARY KEY (`id`) USING BTREE
-) ENGINE = InnoDB AUTO_INCREMENT = 5 CHARACTER SET = utf8 COLLATE = utf8_general_ci ROW_FORMAT = Dynamic;
+) ENGINE = InnoDB AUTO_INCREMENT = 6 CHARACTER SET = utf8 COLLATE = utf8_general_ci ROW_FORMAT = Dynamic;
 
 -- ----------------------------
 -- Records of cf_users
@@ -308,6 +330,7 @@ INSERT INTO `cf_users` VALUES (1, '13211111111', '93d0d3f91e02624f3531e86aca384f
 INSERT INTO `cf_users` VALUES (2, '15411111111', '93d0d3f91e02624f3531e86aca384f0a', 1574042696);
 INSERT INTO `cf_users` VALUES (3, '15984775637', '93d0d3f91e02624f3531e86aca384f0a', 1574042803);
 INSERT INTO `cf_users` VALUES (4, '15611111111', '93d0d3f91e02624f3531e86aca384f0a', 1574042835);
+INSERT INTO `cf_users` VALUES (5, '15984775639', '93d0d3f91e02624f3531e86aca384f0a', 1576031121);
 
 -- ----------------------------
 -- Table structure for cf_wheel
