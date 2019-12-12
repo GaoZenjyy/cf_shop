@@ -11,7 +11,7 @@
  Target Server Version : 50725
  File Encoding         : 65001
 
- Date: 12/12/2019 16:47:06
+ Date: 12/12/2019 16:59:17
 */
 
 SET NAMES utf8mb4;
@@ -37,12 +37,6 @@ CREATE TABLE `cf_addresses`  (
 ) ENGINE = InnoDB AUTO_INCREMENT = 20 CHARACTER SET = utf8 COLLATE = utf8_general_ci ROW_FORMAT = Dynamic;
 
 -- ----------------------------
--- Records of cf_addresses
--- ----------------------------
-INSERT INTO `cf_addresses` VALUES (18, '张三', '15984775637', '河北省', '石家庄市', '长安区', '的发生地方', 234000, 1, NULL, '130102');
-INSERT INTO `cf_addresses` VALUES (19, '高源', '15984775637', '四川省', '达州市', '通川区', '安云乡', 635000, 0, 3, '511702');
-
--- ----------------------------
 -- Table structure for cf_cates
 -- ----------------------------
 DROP TABLE IF EXISTS `cf_cates`;
@@ -57,12 +51,6 @@ CREATE TABLE `cf_cates`  (
   `user_id` int(10) UNSIGNED NULL DEFAULT NULL COMMENT '用户id',
   PRIMARY KEY (`id`) USING BTREE
 ) ENGINE = InnoDB AUTO_INCREMENT = 21 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci ROW_FORMAT = Dynamic;
-
--- ----------------------------
--- Records of cf_cates
--- ----------------------------
-INSERT INTO `cf_cates` VALUES (19, 'come get some 变色折叠雨伞', 129.00, 'https://game.gtimg.cn/images/zb/x5/uploadImg/goods/201907/20190719184412_98890.jpg', 2, 0, 1, 5);
-INSERT INTO `cf_cates` VALUES (20, 'come get some 变色折叠雨伞', 129.00, 'https://game.gtimg.cn/images/zb/x5/uploadImg/goods/201907/20190719184412_98890.jpg', 3, 0, 1, 1);
 
 -- ----------------------------
 -- Table structure for cf_class_ification
