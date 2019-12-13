@@ -589,7 +589,7 @@ router.post("/addresses", (req, res) => {
         isdefault = 1
         let token = req.headers.authorization
         try {
-            var decoded = jsonwebtoken.verify(token.substring(6), config.md5s);
+            var decoded = jsonwebtoken.verify(token.substring(7), config.md5s);
             // console.log(decoded);
             let id = decoded.id
             // let sql2 = `UPDATE cf_addresses SET isdefault = 1`
@@ -658,35 +658,50 @@ router.post("/addresses", (req, res) => {
 })
 // 获取地址
 router.get("/getaddress", (req, res) => {
-    let sql = `SELECT id,shr_name,mobile,province a,city b,area c,address d,isdefault FROM cf_addresses`
-    connt.query(sql, (error, data) => {
-        // console.log(data); return
-        let result = []
-        data.forEach(v => {
-            // console.log(v);
-            result.push({
-                id: v.id,
-                name: v.shr_name,
-                tel: v.mobile,
-                address: v.a + v.b + v.c + v.d,
-                addressId: v.isdefault
+    let token = req.headers.authorization
+    try {
+        var decoded = jsonwebtoken.verify(token.substring(7), config.md5s);
+        // console.log(decoded);
+        let id = decoded.id
+        let sql = `SELECT id,shr_name,mobile,province a,city b,area c,address d,isdefault FROM cf_addresses WHERE user_id = ${id}`
+        connt.query(sql, (error, data) => {
+            // console.log(data); return
+            let result = []
+            data.forEach(v => {
+                // console.log(v);
+                result.push({
+                    id: v.id,
+                    name: v.shr_name,
+                    tel: v.mobile,
+                    address: v.a + v.b + v.c + v.d,
+                    addressId: v.isdefault
+                })
             })
-        })
-        // console.log(result);
+            // console.log(result);
 
-        // console.log(data); return
+            // console.log(data); return
+            if (error) {
+                res.json({
+                    "ok": 0,
+                    "error": error.message
+                })
+            } else {
+                res.json({
+                    result
+                })
+            }
+
+        })
+    } catch (error) {
         if (error) {
             res.json({
                 "ok": 0,
-                "error": error.message
-            })
-        } else {
-            res.json({
-                result
+                "error": "令牌无效"
             })
         }
+    }
 
-    })
+
 
 })
 // 地址回显
