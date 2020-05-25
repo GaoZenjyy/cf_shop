@@ -5,6 +5,15 @@
     <van-cell-group>
       <van-field :value="name" label="手机号码" left-icon="contact" disabled />
     </van-cell-group>
+    <van-cell-group>
+      <van-uploader
+        :after-read="afterRead"
+        v-model="fileList"
+        :max-count="1"
+        upload-text="头像上传"
+        result-type="dataUrl"
+      />
+    </van-cell-group>
     <van-button color="linear-gradient(to right, #4bb0ff, #6149f6)" @click="logoutUsers">退出当前用户</van-button>
   </div>
 </template>
@@ -12,10 +21,35 @@
 export default {
   data() {
     return {
-      name: ""
+      name: "",
+      fileList: []
     };
   },
   methods: {
+    // 图片上传
+    afterRead(file, detail) {
+      // console.log(file.file);
+      // console.log(detail);
+      // let path = file.content;
+      // console.log(path);
+
+      let formData = new FormData();
+      formData.append("avatar", file.file);
+      // let config = {
+      //   headers: {
+      //     'Content-Type': 'multipart/form-data'
+      //   }
+      // }
+
+      this.$http.post("/profile", formData).then(res => {
+        // console.log(res);
+        if (res.data.ok === 1) {
+          this.$dialog.alert({
+            message: res.data.message
+          });
+        }
+      });
+    },
     onClickLeft() {
       this.$router.go(-1);
     },

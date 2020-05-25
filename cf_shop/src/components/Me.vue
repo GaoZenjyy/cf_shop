@@ -2,7 +2,8 @@
   <div class="me">
     <!-- 我的 -->
     <div class="users">
-      <van-uploader :after-read="afterRead" />
+      <img :src="avatar" />
+      <!-- <van-uploader :deletable="false" :after-read="afterRead" v-model="fileList" :max-count="1" /> -->
       <h4>{{name}}</h4>
       <a href="javascript:;" @click="gotoEdit">
         <i></i>
@@ -44,7 +45,7 @@
     </van-cell-group>
     <!-- 地址管理 -->
     <van-cell-group class="user-group">
-      <van-cell icon="location-o" title="地址管理" is-link to="/address"/>
+      <van-cell icon="location-o" title="地址管理" is-link to="/address" />
     </van-cell-group>
     <!-- 领取中心 -->
     <van-cell-group class="user-group">
@@ -73,30 +74,37 @@
   </div>
 </template>
 <script>
+import { log } from "util";
 export default {
   data() {
     return {
-      name: ""
+      avatar: "",
+      name: "",
+      fileList: []
     };
   },
   methods: {
     topath() {
       this.$router.push("/login");
     },
-    afterRead() {},
+    // afterRead(file) {
+    //   console.log(file.file.name);
+    // },
     // 获取用户信息
     getUserData() {
       this.$http.get("/userdata").then(res => {
         // console.log(res);
-        if (res.data.ok == 0) {
+        if (res.data.ok === 0) {
           this.$dialog.alert({
             message: res.data.error
           });
         } else {
           let user = res.data.data[0].cf_username;
+          let avatar = res.data.data[0].avatar;
+
           //   console.log(user);
           this.name = user;
-
+          this.avatar = avatar;
           //   this.userdata.push(...res.data.data);
           //   console.log(this.userdata[this.num].cf_username);
           //   console.log(this.name);
@@ -113,7 +121,7 @@ export default {
   }
 };
 </script>
-<style lang="less" scoped>
+<style lang="less">
 .users {
   width: 100%;
   height: 100px;
@@ -157,5 +165,18 @@ export default {
       font-size: 24px;
     }
   }
+}
+.van-uploader__wrapper {
+  margin-top: 10px;
+  margin-left: 10px;
+}
+.users img {
+  display: block;
+  width: 78px;
+  height: 78px;
+  margin-top: 10px;
+  margin-left: 10px;
+  margin-right: 10px;
+  // background-color: aqua;
 }
 </style>

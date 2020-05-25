@@ -1,0 +1,26 @@
+.formLogin {
+    width: 400px;
+    height: 220px;
+    border: 1px solid #0096ff;
+    padding: 25px !important;
+    position: absolute;
+    left: 50%;
+    top: 50% !important;
+   transform: translate(-50%, -50%);
+}
+
+.loginButton {
+    position: absolute !important;
+    right: 25px !important;
+}
+
+#root,
+.ant-layout {
+    height: 100%;
+}
+.orderImg{
+    width: 10%;
+}
+.selectes{
+    margin-top: 20px;
+ }

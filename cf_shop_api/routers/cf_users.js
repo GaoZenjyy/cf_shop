@@ -4,10 +4,57 @@ const md5 = require("md5");
 const config = require("../config")
 const connt = require("../db")
 const jsonwebtoken = require("jsonwebtoken")
+// const moment = require("moment")
+// const fs = require('fs')
+// const multer = require('multer')
+// var upload = multer()
+const { upload } = require("../util")
+
 // 引入中间件 
 // const { chkToken } = require("../util")
 // 引入 同步 query 
 // const { query } = require("../db");
+const QcloudSms = require('qcloudsms_js');
+const cfg = {
+    appid: 1400286568, // SDK AppID 以1400开头
+    appkey: '4ab7f9058667355bdb38c1ebddb5bd35', // 短信应用 SDK AppKey
+    templateId: 475954, // 短信模板 ID，需要在短信控制台中申请
+    smsSign: '高源的文章日志', // NOTE: 签名参数使用的是`签名内容`，而不是`签名ID`。这里的签名"腾讯云"只是示例，真实的签名需要在短信控制台申请
+}
+
+// 简单封装一下, 向指定手机下发验证码
+// sendCode('18212341234', 1234) // 发送短信
+
+// 短信验证
+// router.post("/sendsms", (req, res) => {
+//     // console.log(req.body.tel);
+
+//     // let code = sendCode(req.body.tel, 121212)
+//     // res.json({
+//     //     code
+//     // })
+//     function sendCode(phone, code, time = 10) {
+//         phone = typeof (phone) === 'object' ? phone : [phone]
+//         const qcloudsms = QcloudSms(cfg.appid, cfg.appkey) // 实例化 QcloudSms
+//         const msender = qcloudsms.SmsMultiSender()
+//         msender.sendWithParam(86,
+//             phone, // 一个数组
+//             cfg.templateId, // 模版 id
+//             [code, time], // 正文中的参数值
+//             cfg.smsSign, // 签名 未提供或者为空时，会使用默认签名发送短信
+//             '', '',
+//             (err, res, resData) => { // 回调函数
+//                 // err && 
+//                 // // console.log('err: ', err)
+//                 // // console.log('request data: ', res.req)
+//                 // // console.log('response data: ', resData)
+//                 return resData
+//             })
+//             console.log(resData);
+
+//     }
+//     sendCode(req.body.tel, 12121)
+// })
 // 用户注册
 router.post("/register", (req, res) => {
     // console.log(req.body);
@@ -929,9 +976,6 @@ router.get("/geraddress", (req, res) => {
 
     })
 })
-
-
-
 // 加入购物车
 router.post("/goshops", (req, res) => {
     let token = req.headers.authorization;
@@ -1112,5 +1156,322 @@ router.put("/checklist", (req, res) => {
 
 
 })
+// 上传图片
 
+router.post("/profile", upload.single("avatar"), (req, res, next) => {
+    // console.log(req.file);
+    let path = `http://127.0.0.1:9898/` + req.file.path
+    // console.log(path);
+    // res.json(req.file)
+    let token = req.headers.authorization
+    // console.log(token.substring(7));
+    if (token === null) {
+        res.json({
+            error: "没有令牌 请登录"
+        })
+    } else {
+        try {
+            let decoded = jsonwebtoken.verify(token.substring(7), config.md5s)
+            // console.log(decoded);
+            let id = decoded.id
+            // console.log(id);
+            let sql = `UPDATE cf_users SET avatar = ? WHERE id = ?`
+            let data = [path, id]
+            connt.query(sql, data, (error, data) => {
+                // console.log(data);
+                if (error) {
+                    res.json({
+                        ok: 0,
+                        error: error.message
+                    })
+                } else {
+                    res.json({
+                        ok: 1,
+                        message: "头像更新成功"
+                    })
+                }
+
+            })
+        } catch (error) {
+            res.json({
+                error: "令牌无效"
+            })
+        }
+    }
+})
+// router.post("/profile", upload.single("avatar"), (req, res, next) => {
+//     // console.log(req.file)
+//     // res.json({
+//     //     ok: 1,
+//     //     path: '/'
+//     // })
+//     let { originalname, buffer } = req.file
+//     fs.writeFile(path.join(__dirname, `../uploads/${originalname}`), buffer, () => {
+//         res.json({
+//             ok: 1,
+//             path: 'http://localhost:9898/api/v1/uploads/' + originalname
+//         })
+//     })
+
+// })
+// router.post("/profile", (req, res) => {
+//     console.log(req.body);
+// })
+// ---------------------------------------------------------------------------后台登录---------------------------------------------------------------------
+// 登录
+router.post("/adminuser", (req, res) => {
+    // console.log(req.body);
+    let username = req.body.username
+    let password = req.body.password
+    // console.log(username,password);
+    // let sql = `SELECT * FROM admin`
+    // let data = [username,password]
+    let sql = `SELECT id,password FROM admin WHERE username =?`
+    connt.query(sql, username, (error, data) => {
+        // console.log(data);
+        if (error) {
+            res.json({
+                "ok": 0,
+                "error": error.message
+            })
+        } else {
+            if (data.length > 0 && data[0].password === password) {
+                let jwt = jsonwebtoken.sign({
+                    id: data[0].id
+                }, config.md5s, { expiresIn: 36000 })
+                // console.log(jwt);
+                res.json({
+                    "ok": 1,
+                    "token": jwt
+                })
+                // console.log(1);
+
+            } else {
+                // console.log(2);
+                res.json({
+                    "ok": 0,
+                    "error": "密码错误"
+                })
+            }
+        }
+    })
+
+})
+// 获取商品数据
+router.get("/orderlist", (req, res) => {
+    let pagenum = req.query.pagenum
+    let pagesize = req.query.pagesize
+    // console.log(req.query);
+    let datanum = parseInt((pagenum - 1) * pagesize)
+    // console.log(datanum);
+    let limit = `LIMIT ${datanum},${pagesize}`
+    let sql = `SELECT COUNT(*) num FROM cf_goods_shops;SELECT * FROM cf_goods_shops ${limit}`
+    connt.query(sql, (error, data) => {
+        // console.log(data);
+        if (error) {
+            res.json({
+                "ok": 0,
+                "error": error.message
+            })
+        } else {
+            // console.log(data[0][0].num);
+            res.json({
+                ok: 1,
+                data: data[1],
+                total: data[0][0].num
+            })
+        }
+
+    })
+})
+// 商品分类查询
+router.get("/orderquery", (req, res) => {
+    connt.query(`SELECT * FROM cf_class_ification LIMIT 1,10`, (error, data) => {
+        // console.log(data);
+        if (error) {
+            res.json({
+                "ok": 0,
+                "error": error.message
+            })
+        } else {
+            res.json({
+                "ok": 1,
+                data
+            })
+        }
+    })
+})
+// 上传图片
+router.post("/profiles", upload.single("file"), (req, res, next) => {
+    // console.log(req);
+    // let path = `http://127.0.0.1:9898/` + req.file.path
+    // console.log(path);
+    // // res.json(req.file)
+    // let token = req.headers.authorization
+    // // console.log(token.substring(7));
+    // if (token === null) {
+    //     res.json({
+    //         error: "没有令牌 请登录"
+    //     })
+    // } else {
+    //     try {
+    //         let decoded = jsonwebtoken.verify(token.substring(7), config.md5s)
+    //         // console.log(decoded);
+    //         let id = decoded.id
+    //         // console.log(id);
+    //         let sql = `UPDATE cf_users SET avatar = ? WHERE id = ?`
+    //         let data = [path, id]
+    //         connt.query(sql, data, (error, data) => {
+    //             // console.log(data);
+    //             if (error) {
+    //                 res.json({
+    //                     ok: 0,
+    //                     error: error.message
+    //                 })
+    //             } else {
+    //                 res.json({
+    //                     ok: 1,
+    //                     message: "头像更新成功"
+    //                 })
+    //             }
+
+    //         })
+    //     } catch (error) {
+    //         res.json({
+    //             error: "令牌无效"
+    //         })
+    //     }
+    // }
+})
+//用户列表
+router.get("/userlist", (req, res) => {
+    let pagenum = req.query.pagenum
+    let pagesize = req.query.pagesize
+    // console.log(req.query);
+    let datanum = parseInt((pagenum - 1) * pagesize)
+    // console.log(datanum);
+    let limit = `LIMIT ${datanum},${pagesize}`
+    let sql = `SELECT COUNT(*) num FROM cf_users;SELECT * FROM cf_users ${limit}`
+    connt.query(sql, (error, data) => {
+        // console.log(data);
+        if (error) {
+            res.json({
+                "ok": 0,
+                "error": error.message
+            })
+        } else {
+            // console.log(data[0][0].num);
+            res.json({
+                ok: 1,
+                data: data[1],
+                total: data[0][0].num
+            })
+        }
+
+    })
+})
+
+//添加用户
+router.post("/adminusers", (req, res) => {
+    // return console.log(123);
+    // console.log(121);
+    // 获取前台数据
+    let mobile = req.body.mobile;
+    let password = req.body.password;
+    // 手机号码校验
+    let mobileRe = /^1(3|4|5|6|7|8|9)\d{9}$/
+    // 密码校验
+    let passwordRe = /^[0-9a-zA-Z_]{6,20}$/
+    // 正则判断手机号码
+    if (!mobileRe.test(mobile)) {
+        res.json({
+            "ok": 0,
+            "error": "手机号码长度为11位"
+        })
+        return
+    }
+    // 正则判断密码
+    if (!passwordRe.test(password)) {
+        res.json({
+            "ok": 0,
+            "error": "密码长度为6 ~ 20 支持数字 字母 下划线"
+        })
+        return
+    }
+    // res.json({
+    //     "code": 200
+    // })
+    // 写入sql连接数据库
+    // 先判断数据有没有这个手机号 写查询语句
+    let sql = "SELECT count(*) num FROM cf_users WHERE cf_username = ?";
+    connt.query(sql, mobile, (error, data) => {
+        // console.log(data);
+        if (error) {
+            res.json({
+                "ok": 0,
+                "error": error.message
+            })
+        } else {
+            if (data[0].num > 0) {
+                res.json({
+                    "ok": 0,
+                    "error": "该用户已经注册"
+                })
+                return
+            } else {
+                let data = {
+                    cf_username: mobile,
+                    cf_password: md5(password + config.md5s),
+                    create_time: new Date().getTime().toString().substring(0, 10)
+                }
+                let sql = "INSERT INTO cf_users set ?"
+                connt.query(sql, data, (error, result) => {
+                    // console.log(result);
+                    if (error) {
+                        res.json({
+                            "ok": 0,
+                            "error": error.message
+                        })
+                    } else {
+                        res.json({
+                            "code": 200,
+                            "message": "恭喜 注册成功"
+                        })
+                    }
+                })
+            }
+        }
+
+    })
+
+})
+// 删除
+router.delete("/userdel", (req, res) => {
+    // console.log(req.query.id);
+    let id = req.query.id
+    let sql = `DELETE FROM cf_users WHERE id = ${id}`
+    connt.query(sql, (error, result) => {
+        if (error) {
+            res.json({
+                "ok": 0,
+                "error": error.message
+            })
+        } else {
+            // console.log(result.affectedRows);
+            if (result.affectedRows === 1) {
+                res.json({
+                    "ok":1,
+                    "message":"删除用户成功"
+                })
+            } else {
+                res.json({
+                    "ok":0,
+                    "error":"删除用户失败"
+                })
+            }
+
+        }
+    })
+
+})
 module.exports = router;
